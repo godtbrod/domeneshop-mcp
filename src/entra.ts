@@ -13,6 +13,7 @@ export interface Caller {
   oid: string;
   groups: string[];
   name?: string;
+  upn?: string;
 }
 
 export interface VerifierConfig {
@@ -60,7 +61,13 @@ export function createVerifier(cfg: VerifierConfig, key: KeyResolver) {
       ? payload.groups.filter((g: unknown): g is string => typeof g === "string")
       : [];
     const name = typeof payload.name === "string" ? payload.name : undefined;
-    return { oid, groups, name };
+    const upn =
+      typeof payload.preferred_username === "string"
+        ? payload.preferred_username
+        : typeof payload.upn === "string"
+          ? payload.upn
+          : undefined;
+    return { oid, groups, name, upn };
   };
 }
 

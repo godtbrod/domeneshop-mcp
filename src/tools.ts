@@ -1,4 +1,5 @@
 /** MCP tools for DNS pointer management. Every mutation is allowlist-gated and audited. */
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { Config } from "./config.js";
@@ -24,19 +25,24 @@ const recordShape = {
 export function registerTools(server: McpServer, caller: Caller, config: Config): void {
   const api = new Domeneshop(config.domeneshop.token, config.domeneshop.secret);
 
-  const run = async (action: string, target: string, fn: () => Promise<ToolResult>): Promise<ToolResult> => {
+  const run = async (
+    action: string,
+    resource: string,
+    fn: () => Promise<ToolResult>,
+  ): Promise<ToolResult> => {
+    const traceId = randomUUID();
     try {
       const result = await fn();
-      audit(caller, { action, target, outcome: "ok" });
+      audit(caller, { action, resource, outcome: "ok", traceId });
       return result;
     } catch (err) {
       if (err instanceof AccessError) {
-        audit(caller, { action, target, outcome: "denied", detail: err.message });
+        audit(caller, { action, resource, outcome: "denied", reason: err.message, traceId });
         return text(err.message, true);
       }
-      const detail = err instanceof DomeneshopError ? err.message : String(err);
-      audit(caller, { action, target, outcome: "error", detail });
-      return text(`Noe gikk galt: ${detail}`, true);
+      const reason = err instanceof DomeneshopError ? err.message : String(err);
+      audit(caller, { action, resource, outcome: "error", reason, traceId });
+      return text(`Noe gikk galt: ${reason}`, true);
     }
   };
 
