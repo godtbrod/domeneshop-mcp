@@ -1,7 +1,7 @@
 node_modules
 dist
 .git
-.env
+# Bake the ENCRYPTED .env into the image; never the decryption keys.
 .env.keys
 test
 *.log
