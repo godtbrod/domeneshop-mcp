@@ -1,6 +1,9 @@
 node_modules/
 dist/
-# dotenvx: the ENCRYPTED .env is committed (ciphertext, safe); NEVER commit the keys.
+# dotenvx: the ENCRYPTED .env IS committed (ciphertext) and baked into the image.
+# Override the user's global ~/.gitignore_global which ignores .env.
+!.env
+# ...but NEVER the decryption keys.
 .env.keys
 *.log
 .DS_Store
